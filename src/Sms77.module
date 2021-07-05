@@ -1,0 +1,178 @@
+<?php namespace ProcessWire;
+
+/**
+ * @property string apiKey
+ * @property int debug
+ * @property string sms_from
+ */
+class Sms77 extends WireData implements Module, ConfigurableModule {
+    static protected $defaults = array(
+        'apiKey' => '',
+        'debug' => 0,
+        'sms_from' => '',
+    );
+
+    public function __construct() {
+        parent::__construct();
+
+        // set defaults options
+        // $this->$key will be set if the module data (json config in db) has saved values, if not we set the default
+        foreach (self::$defaults as $k => $v) if (!isset($this->$k)) $this->set($k, $v);
+    }
+
+    /**
+     * build module configuration fields
+     * @param array $data module config array
+     * @return InputfieldWrapper fieldwrapper object
+     * @throws WireException
+     * @throws WirePermissionException
+     */
+    public function getModuleConfigInputfields(array $data) {
+        $fields = new InputfieldWrapper;
+        $cfg = array_merge(self::$defaults, $data);
+
+        $fieldset = $this->wire('modules')->get('InputfieldFieldset');
+        $fieldset->attr('name', 'general');
+        $fieldset->icon = 'cog';
+        $fieldset->label = $this->_('General');
+
+        $field = $this->wire('modules')->get('InputfieldText');
+        $field->attr('maxlength', 90);
+        $field->attr('name', 'apiKey');
+        $field->attr('required', 'required');
+        $field->attr('value', $cfg['apiKey']);
+        $field->description =
+            $this->_('Required for sending - get yours @ https://www.sms77.io');
+        $field->label = $this->_('API Key');
+        $fieldset->append($field);
+
+        $field = $this->wire('modules')->get('InputfieldCheckbox');
+        $field->attr('checked', $cfg['debug'] ? 'checked' : '');
+        $field->attr('name', 'debug');
+        $field->attr('value', 1);
+        $field->description =
+            $this->_('Enables validating but does not send messages if enabled');
+        $field->label = $this->_('Debug?');
+        $fieldset->append($field);
+
+        $fields->append($fieldset);
+
+        $fieldset = $this->wire('modules')->get('InputfieldFieldset');
+        $fieldset->attr('name', 'sms');
+        $fieldset->icon = 'envelope';
+        $fieldset->label = $this->_('SMS');
+
+        $field = $this->wire('modules')->get('InputfieldText');
+        $field->attr('maxlength', 16);
+        $field->attr('name', 'sms_from');
+        $field->attr('value', $cfg['sms_from']);
+        $field->description = $this->_('Sets the sender for outgoing SMS');
+        $field->label = $this->_('From');
+        $field->notes = $this->_('Max 16 numeric or 11 alphanumeric characters');
+        $fieldset->append($field);
+
+        $fields->append($fieldset);
+
+        return $fields;
+    }
+
+    public function ready() {
+        if (!$this->apiKey) return;
+
+        $conf = self::getModuleInfo();
+
+        $this->config->js('Sms77', array(
+            'prompt_text' => __('Please enter the message content.'),
+            'text_missing' => __('Not sending SMS: Missing text!'),
+        ));
+
+        $this->config->scripts->add(
+            $this->config->urls->Sms77 . 'Sms77.js?v=' . $conf['version'] . '');
+
+        $this->modules->get('JqueryUI')->use('modal');
+
+        $this->addHookAfter('ProcessPageEdit::buildForm', $this, 'buildForm');
+
+        $this->addHookAfter(
+            'ProcessPageEdit::getSubmitActions', $this, 'getSubmitActions');
+
+        $this->addHookAfter(
+            'ProcessPageEdit::processSubmitAction', $this, 'processSubmitAction');
+    }
+
+    public static function getModuleInfo() {
+        return array(
+            'autoload' => true,
+            'href' => 'https://github.com/sms77io/ProcessWire',
+            'singular' => true,
+            'summary' => 'Send SMS via Sms77.io.',
+            'title' => 'Sms77',
+            'version' => 100,
+        );
+    }
+
+    public function buildForm(HookEvent $e) {
+        $field = $this->modules->get('InputfieldHidden');
+        $field->attr('name', 'sms77_text');
+        $field->attr('value', '');
+
+        $e->return->add($field);
+    }
+
+    public function getSubmitActions(HookEvent $e) {
+        if (!$e->process->getPage() instanceof User) return;
+
+        $actions = $e->return;
+
+        unset($actions['next']);
+
+        $e->return = array_merge($actions, array('sms' => array(
+            'icon' => 'envelope',
+            'label' => 'SMS',
+            'value' => 'sms77_sms_user',
+        )));
+    }
+
+    public function processSubmitAction(HookEvent $e) {
+        if ('sms77_sms_user' !== $e->arguments(0)) return;
+
+        $page = $e->process->getPage();
+        if (!$page instanceof User) return;
+
+        $text = $e->process->input->post->get('sms77_text');
+        $to = $e->data['object']['user']->data['mobile_phone'];
+        $from = $this->sms_from;
+
+        $this->sms(compact('from', 'text', 'to'));
+
+        $this->wire->session->redirect($page->editUrl);
+    }
+
+    private function sms(array $payload) {
+        return $this->post('sms', $payload);
+    }
+
+    private function post($endpoint, array $payload) {
+        if ('' === $this->apiKey) {
+            $e = $this->_('Not sending: Missing API key!');
+            $this->wire->log->error($e, true);
+            return $e;
+        }
+
+        $http = new WireHttp;
+        $res = $http->setHeaders(array(
+            'SentWith' => 'ProcessWire',
+            'X-Api-Key' => $this->apiKey,
+        ))->post('https://gateway.sms77.io/api/' . $endpoint, array_merge($payload, array(
+            'debug' => $this->debug,
+        )));
+        if (false === $res) {
+            $e = $http->getError();
+            $this->wire->log->error((string)$e, true);
+            return $e;
+        }
+
+        $this->wire->log->message((string)$res, true);
+        return $res;
+    }
+}
