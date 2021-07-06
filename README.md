@@ -9,7 +9,13 @@
 4. Select `user` template, add `mobile_phone` field and press `Save` - see [screenshot](_screenshots/edit_user_template.png)
 5. Go to `Admin->Modules->Sms77`, enter your `API Key` and press `Submit`
 
-### Support
+### Placeholders
+
+- email
+
+Usage: `{{email}}` resolves to the users email address
+
+#### Support
 
 Need help? Feel free to [contact us](https://www.sms77.io/en/company/contact/).
 

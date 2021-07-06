@@ -107,7 +107,7 @@ class Sms77 extends WireData implements Module, ConfigurableModule {
             'singular' => true,
             'summary' => 'Send SMS via Sms77.io.',
             'title' => 'Sms77',
-            'version' => 100,
+            'version' => 110,
         );
     }
 
@@ -143,6 +143,9 @@ class Sms77 extends WireData implements Module, ConfigurableModule {
         $to = $e->data['object']['user']->data['mobile_phone'];
         $from = $this->sms_from;
 
+        foreach (array('email') as $key) $text = str_replace(
+            '{{' . $key . '}}', $e->data['object']['user']->data[$key], $text);
+
         $this->sms(compact('from', 'text', 'to'));
 
         $this->wire->session->redirect($page->editUrl);
@@ -153,6 +156,8 @@ class Sms77 extends WireData implements Module, ConfigurableModule {
     }
 
     private function post($endpoint, array $payload) {
+        $text = $payload['text'];
+
         if ('' === $this->apiKey) {
             $e = $this->_('Not sending: Missing API key!');
             $this->wire->log->error($e, true);
