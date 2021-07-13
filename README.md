@@ -3,7 +3,7 @@
 
 ## Installation
 
-1. `unzip -d /path/to/processwire/wire/modules`
+1. Extract archive `unzip -d /path/to/processwire/wire/modules <archive_name>.zip`
 2. Add mobile phone field `Admin->Setup->Fields->Add New` - see [screenshot](_screenshots/add_new_field.png)
 3. Go to `Admin->Setup->Templates`, press `Filters` and set `Show system templates?` to `yes`
 4. Select `user` template, add `mobile_phone` field and press `Save` - see [screenshot](_screenshots/edit_user_template.png)
