@@ -114,12 +114,12 @@ class Sms77 extends Process implements ConfigurableModule {
         $info = self::getModuleInfo();
 
         $this->config->js('Sms77', array(
-            'prompt_text' => __('Please enter the message content.'),
-            'text_missing' => __('Not sending SMS: Missing text!'),
+            'prompt_text' => $this->_('Please enter the message content.'),
+            'text_missing' => $this->_('Not sending SMS: Missing text!'),
         ));
 
         $this->config->scripts->add(
-            $this->config->urls->Sms77 . 'Sms77.js?v=' . $info['version'] . '');
+            $this->config->urls->Sms77 . 'Sms77.js?v=' . $info['version']);
 
         $this->addHookAfter('ProcessPageEdit::buildForm', $this, 'buildForm');
 
@@ -148,7 +148,7 @@ class Sms77 extends Process implements ConfigurableModule {
             'singular' => true,
             'summary' => __('Send SMS via Sms77.io.'),
             'title' => 'Sms77',
-            'version' => 120,
+            'version' => 130,
         );
     }
 
@@ -157,11 +157,11 @@ class Sms77 extends Process implements ConfigurableModule {
             <dl class="uk-description-list uk-description-list-divider">
                 <dt>
                     <a href="/processwire/sms77/bulk-sms/">
-                        <i style="float: right;" class="fa fa-3x fa-fw fa-envelope ui-priority-secondary"></i> 
-                        Bulk SMS
+                        <i style="float: right;" class="fa fa-3x fa-fw fa-envelope ui-priority-secondary"></i>
+                        ' . $this->_('Bulk SMS') . '
                     </a>
                 </dt>
-                <dd>Send bulk SMS to all of your users</dd>
+                <dd>' . $this->_('Send bulk SMS to all of your users') . '</dd>
             </dl>
         ';
     }
@@ -287,7 +287,7 @@ class Sms77 extends Process implements ConfigurableModule {
 
         $e->return = array_merge($actions, array('sms' => array(
             'icon' => 'envelope',
-            'label' => 'SMS',
+            'label' => $this->_('SMS'),
             'value' => 'sms77_sms_user',
         )));
     }

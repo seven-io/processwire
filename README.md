@@ -1,4 +1,4 @@
-![Sms77.io Logo](https://www.sms77.io/wp-content/uploads/2019/07/sms77-Logo-400x79.png "Sms77.io Logo")
+![sms77 Logo](https://www.sms77.io/wp-content/uploads/2019/07/sms77-Logo-400x79.png "sms77 Logo")
 # Official module for [ProcessWire](https://processwire.com/)
 
 ## Installation
@@ -26,4 +26,4 @@ Usage: `{{email}}` resolves to the users email address
 
 Need help? Feel free to [contact us](https://www.sms77.io/en/company/contact/).
 
-[![MIT](https://img.shields.io/badge/License-MIT-teal.svg)](./LICENSE)
+[![MIT](https://img.shields.io/badge/License-MIT-teal.svg)](LICENSE)
