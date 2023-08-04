@@ -6,7 +6,7 @@
  * @property string mobilePhoneField
  * @property string sms_from
  */
-class Sms77 extends Process implements ConfigurableModule {
+class Seven extends Process implements ConfigurableModule {
     static protected $defaults = array(
         'apiKey' => '',
         'debug' => 0,
@@ -50,7 +50,7 @@ class Sms77 extends Process implements ConfigurableModule {
         $field->attr('required', 'required');
         $field->attr('value', $cfg['apiKey']);
         $field->description =
-            $this->_('Required for sending - get yours @ https://www.sms77.io');
+            $this->_('Required for sending - get yours @ https://www.seven.io');
         $field->label = $this->_('API Key');
         $fieldset->append($field);
 
@@ -113,13 +113,13 @@ class Sms77 extends Process implements ConfigurableModule {
 
         $info = self::getModuleInfo();
 
-        $this->config->js('Sms77', array(
+        $this->config->js('Seven', array(
             'prompt_text' => $this->_('Please enter the message content.'),
             'text_missing' => $this->_('Not sending SMS: Missing text!'),
         ));
 
         $this->config->scripts->add(
-            $this->config->urls->Sms77 . 'Sms77.js?v=' . $info['version']);
+            $this->config->urls->Seven . 'Seven.js?v=' . $info['version']);
 
         $this->addHookAfter('ProcessPageEdit::buildForm', $this, 'buildForm');
 
@@ -132,9 +132,9 @@ class Sms77 extends Process implements ConfigurableModule {
 
     public static function getModuleInfo() {
         return array(
-            'author' => 'sms77 e.K., www.sms77.io',
+            'author' => 'seven communications GmbH & Co. KG, www.seven.io',
             'autoload' => true,
-            'href' => 'https://github.com/sms77io/ProcessWire',
+            'href' => 'https://github.com/seven-io/ProcessWire',
             'nav' => array(
                 array(
                     'label' => __('Bulk SMS'),
@@ -142,13 +142,13 @@ class Sms77 extends Process implements ConfigurableModule {
                 ),
             ),
             'page' => array(
-                'name' => 'sms77',
-                'title' => 'Sms77',
+                'name' => 'seven',
+                'title' => 'Seven',
             ),
             'singular' => true,
-            'summary' => __('Send SMS via Sms77.io.'),
-            'title' => 'Sms77',
-            'version' => 130,
+            'summary' => __('Send SMS via seven.io.'),
+            'title' => 'Seven',
+            'version' => 200,
         );
     }
 
@@ -156,7 +156,7 @@ class Sms77 extends Process implements ConfigurableModule {
         return '
             <dl class="uk-description-list uk-description-list-divider">
                 <dt>
-                    <a href="/processwire/sms77/bulk-sms/">
+                    <a href="/processwire/seven/bulk-sms/">
                         <i style="float: right;" class="fa fa-3x fa-fw fa-envelope ui-priority-secondary"></i>
                         ' . $this->_('Bulk SMS') . '
                     </a>
@@ -254,7 +254,7 @@ class Sms77 extends Process implements ConfigurableModule {
         $res = $http->setHeaders(array(
             'SentWith' => 'ProcessWire',
             'X-Api-Key' => $this->apiKey,
-        ))->post('https://gateway.sms77.io/api/' . $endpoint, array_merge($payload, array(
+        ))->post('https://gateway.seven.io/api/' . $endpoint, array_merge($payload, array(
             'debug' => $this->debug,
             'json' => 1,
         )));
@@ -272,7 +272,7 @@ class Sms77 extends Process implements ConfigurableModule {
 
     public function buildForm(HookEvent $e) {
         $field = $this->modules->get('InputfieldHidden');
-        $field->attr('name', 'sms77_text');
+        $field->attr('name', 'seven_text');
         $field->attr('value', '');
 
         $e->return->add($field);
@@ -288,18 +288,18 @@ class Sms77 extends Process implements ConfigurableModule {
         $e->return = array_merge($actions, array('sms' => array(
             'icon' => 'envelope',
             'label' => $this->_('SMS'),
-            'value' => 'sms77_sms_user',
+            'value' => 'seven_sms_user',
         )));
     }
 
     public function processSubmitAction(HookEvent $e) {
-        if ('sms77_sms_user' !== $e->arguments(0)) return;
+        if ('seven_sms_user' !== $e->arguments(0)) return;
 
         $page = $e->process->getPage();
         if (!$page instanceof User) return;
 
         $from = $this->sms_from;
-        $text = $e->process->input->post->get('sms77_text');
+        $text = $e->process->input->post->get('seven_text');
         $to = $e->user->get($this->mobilePhoneField);
 
         foreach (array('email') as $key) $text = str_replace(
